@@ -34,6 +34,7 @@
 #include <WifiClient.h>
 #include <LittleFS.h>
 #include <ESP32-targz.h>
+#include "esp_wifi.h"
 
 #include "LogManager.h"
 #include "WiFiAdapter.h"
@@ -322,11 +323,53 @@ private:
             Serial.print("ERR: attempting to join a WiFi network as a station without a specified SSID\n");
             return false;
         }
-        wl_status_t status = WiFi.begin(ssid.c_str(), password.c_str());
-        WiFi.setSleep(false);
-        m_lastConnectAttempt = millis();
+
+        // Setup event handlers for detailed connection forensics
         if (m_verbose) {
-            Serial.printf("DBG: started network join on %s:%s at %d with immediate status %d\n", ssid.c_str(), password.c_str(), m_lastConnectAttempt, (int)status);
+            WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info){
+                Serial.printf("DBG: WiFi Event: %d\n", event);
+                if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
+                    Serial.printf("DBG: Disconnect reason: %d\n", info.wifi_sta_disconnected.reason);
+                } else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
+                    Serial.printf("DBG: Got IP: %s\n", IPAddress(info.got_ip.ip_info.ip.addr).toString().c_str());
+                }
+            });
+        }
+
+        WiFi.mode(WIFI_STA);
+        WiFi.disconnect(true);
+        delay(100); 
+        WiFi.setSleep(false);
+
+        // Low-level configuration for modern hotspot compatibility (WPA3 SAE + H2E + PMF)
+        wifi_config_t sta_config;
+        memset(&sta_config, 0, sizeof(sta_config));
+        memcpy(sta_config.sta.ssid, ssid.c_str(), ssid.length());
+        memcpy(sta_config.sta.password, password.c_str(), password.length());
+        
+        // Android 13+ and Pixel devices often mandate WPA3 features like Hash-to-Element (H2E)
+        // and Protected Management Frames (PMF).
+        sta_config.sta.sae_pwe_h2e = WPA3_SAE_PWE_BOTH; 
+        sta_config.sta.pmf_cfg.capable = true;
+        sta_config.sta.pmf_cfg.required = true;
+        
+        if (m_verbose) {
+            Serial.println("DBG: applying ESP-IDF WPA3 SAE + H2E + PMF configuration.");
+        }
+
+        esp_err_t err = esp_wifi_set_config(WIFI_IF_STA, &sta_config);
+        if (err != ESP_OK && m_verbose) {
+            Serial.printf("ERR: esp_wifi_set_config failed with error code %d\n", err);
+        }
+        
+        // Force 20MHz bandwidth for improved stability in noisy environments
+        esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
+
+        wl_status_t status = WiFi.begin();
+        m_lastConnectAttempt = millis();
+        
+        if (m_verbose) {
+            Serial.printf("DBG: started network join on %s at %d with immediate status %d\n", ssid.c_str(), m_lastConnectAttempt, (int)status);
         }
         return status == WL_CONNECTED;
     }
