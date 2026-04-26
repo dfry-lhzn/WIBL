@@ -85,8 +85,13 @@ public:
     /// \brief Determine the wireless mode currently configures
     static WirelessMode GetWirelessMode(void);
 
-    void RunLoop(void);
-    
+    /// \brief Configure verbose reporting for debug logs
+    virtual void SetVerbose(bool verbose) = 0;
+    /// \brief Determine whether verbose reporting is on
+    virtual bool Verbose(void) = 0;
+
+    virtual void RunLoop(void) = 0;
+
 private:
     /// \brief Sub-class implementation of code to start the interface.
     virtual bool start(void) = 0;
@@ -110,8 +115,6 @@ private:
 
     /// \brief Sub-class implementation of code to transmit messages (and complete transaction)
     virtual bool transmitMessages(void) = 0;
-
-    virtual void runLoop(void) = 0;
 };
 
 /// \class WiFiAdapterFactory

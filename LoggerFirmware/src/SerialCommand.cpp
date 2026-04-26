@@ -311,10 +311,12 @@ void SerialCommand::SetVerboseMode(String const& mode)
         if (m_CANLogger != nullptr) m_CANLogger->SetVerbose(true);
         if (m_serialLogger != nullptr) m_serialLogger->SetVerbose(true);
         if (m_bridge != nullptr) m_bridge->SetVerbose(true);
+        if (m_wifi != nullptr) m_wifi->SetVerbose(true);
     } else if (mode == "off") {
         if (m_CANLogger != nullptr) m_CANLogger->SetVerbose(false);
         if (m_serialLogger != nullptr) m_serialLogger->SetVerbose(false);
         if (m_bridge != nullptr) m_bridge->SetVerbose(false);
+        if (m_wifi != nullptr) m_wifi->SetVerbose(false);
     } else {
         Serial.println("ERR: verbose mode not recognised.");
     }
