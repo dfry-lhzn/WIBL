@@ -42,6 +42,7 @@ function createJSONConfig() {
     const stationDelay = document.getElementById("retry-delay").value;
     const stationRetries = document.getElementById("retry-count").value;
     const stationTimeout = document.getElementById("join-timeout").value;
+    const stationScanInterval = document.getElementById("scan-interval") ? document.getElementById("scan-interval").value : "30";
     const pmfMode = document.getElementById("pmf-mode") ? document.getElementById("pmf-mode").value : "capable";
     const mdnsName = document.getElementById("mdns-name").value;
     const apSSID = document.getElementById("ap-ssid").value;
@@ -78,6 +79,7 @@ function createJSONConfig() {
                 "delay": ${stationDelay},
                 "retries": ${stationRetries},
                 "timeout": ${stationTimeout},
+                "scaninterval": ${stationScanInterval},
                 "pmf": ${pmfMode === "required"},
                 "mdns": "${mdnsName}"
             },
@@ -129,6 +131,9 @@ function parseConfigJSON(config) {
     document.getElementById("retry-delay").value = config.wifi.station.delay;
     document.getElementById("retry-count").value = config.wifi.station.retries;
     document.getElementById("join-timeout").value = config.wifi.station.timeout;
+    if (document.getElementById("scan-interval")) {
+        document.getElementById("scan-interval").value = config.wifi && config.wifi.station && config.wifi.station.scaninterval !== undefined ? config.wifi.station.scaninterval : 30;
+    }
     if (document.getElementById("pmf-mode")) {
         const pmfVal = config.wifi && config.wifi.station ? config.wifi.station.pmf : undefined;
         document.getElementById("pmf-mode").value = (pmfVal === true || pmfVal === "required" || pmfVal === "true") ? "required" : "capable";
