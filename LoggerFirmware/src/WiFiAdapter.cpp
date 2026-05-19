@@ -340,6 +340,12 @@ private:
         if (ssid.length() == 0) ssid = "wibl-config";
         if (ssid.length() == 0) password = "wibl-config-password";
 
+        String logger_name;
+        logger::LoggerConfig.GetConfigString(logger::Config::CONFIG_MDNS_NAME_S, logger_name);
+        if (logger_name.length() > 0) {
+            WiFi.softAPsetHostname(logger_name.c_str());
+        }
+
         WiFi.softAP(ssid.c_str(), password.c_str());
         WiFi.setSleep(false);
         IPAddress server_address = WiFi.softAPIP();
@@ -375,6 +381,12 @@ private:
         // Configure WPA3/PMF fallback & parameters for modern hotspots
         WiFi.mode(WIFI_STA);
         
+        String logger_name;
+        logger::LoggerConfig.GetConfigString(logger::Config::CONFIG_MDNS_NAME_S, logger_name);
+        if (logger_name.length() > 0) {
+            WiFi.setHostname(logger_name.c_str());
+        }
+
         String logger_name;
         logger::LoggerConfig.GetConfigString(logger::Config::CONFIG_MDNS_NAME_S, logger_name);
         if (logger_name.length() > 0) {
