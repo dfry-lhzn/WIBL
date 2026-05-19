@@ -277,6 +277,8 @@ public:
                 // that the network isn't there, or there's a problem with the password
                 // etc. -- so we revert to AP mode.
                 logger::LoggerConfig.SetConfigString(logger::Config::ConfigParam::CONFIG_WS_STATUS_S, "AP-Fallback,Station-Join-Failed");
+                WiFi.disconnect(); // Stop background AutoReconnect spam so scans can run
+                WiFi.mode(WIFI_AP_STA); // Ensure both AP and Station interfaces are up for scanning
                 apSetup();
                 m_currentState = AP_MODE;
                 m_lastScanTime = now; // Delay first scan by interval after dropping to AP
@@ -284,6 +286,7 @@ public:
             case STATION_CONNECTED:
                 // The system (finally?) connected, so we update status, and then go into
                 // connection checking mode.
+                m_connectionRetries = maximumReties(); // Reset retry count for future dropouts
                 logger::LoggerConfig.SetConfigString(logger::Config::ConfigParam::CONFIG_WS_STATUS_S, "Station-Enabled,Connected");
                 m_currentState = CONNECTION_CHECK;
                 if (m_verbose) {
@@ -381,12 +384,6 @@ private:
         // Configure WPA3/PMF fallback & parameters for modern hotspots
         WiFi.mode(WIFI_STA);
         
-        String logger_name;
-        logger::LoggerConfig.GetConfigString(logger::Config::CONFIG_MDNS_NAME_S, logger_name);
-        if (logger_name.length() > 0) {
-            WiFi.setHostname(logger_name.c_str());
-        }
-
         String logger_name;
         logger::LoggerConfig.GetConfigString(logger::Config::CONFIG_MDNS_NAME_S, logger_name);
         if (logger_name.length() > 0) {
