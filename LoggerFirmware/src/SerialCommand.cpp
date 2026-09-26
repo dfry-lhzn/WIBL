@@ -529,6 +529,9 @@ void SerialCommand::ManageWireless(String const& command, CommandSource src)
     } else if (command == "station") {
         m_wifi->SetWirelessMode(WiFiAdapter::WirelessMode::ADAPTER_STATION);
         logger::LoggerConfig.SetConfigString(logger::Config::ConfigParam::CONFIG_WS_STATUS_S, "Station-Enabled");
+    } else if (command == "dual") {
+        m_wifi->SetWirelessMode(WiFiAdapter::WirelessMode::ADAPTER_DUAL);
+        logger::LoggerConfig.SetConfigString(logger::Config::ConfigParam::CONFIG_WS_STATUS_S, "AP-Enabled,Station-Connecting");
     } else {
         EmitMessage("ERR: wireless management command not recognised.", src);
         if (src == CommandSource::WirelessPort && m_wifi != nullptr)
@@ -1621,7 +1624,8 @@ void SerialCommand::Syntax(CommandSource src)
     EmitMessage("  version                             Report NMEA0183 and NMEA2000 logger version numbers.\n", src);
     EmitMessage("  webserver on|off delay reties timeout\n", src);
     EmitMessage("                                      Configure web-server interface with given retry delay (seconds), retries (int), and connection timeout (seconds).\n", src);
-    EmitMessage("  wireless on|off|accesspoint|station Control WiFi activity [on|off] and mode [accesspoint|station].\n", src);
+    EmitMessage("  wireless on|off|accesspoint|station|dual\n", src);
+    EmitMessage("                                      Control WiFi activity [on|off] and mode [accesspoint|station|dual].\n", src);
 }
 
 /// Execute the command strings received from the serial interface(s).  This tests the

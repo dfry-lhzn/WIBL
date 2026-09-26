@@ -53,8 +53,9 @@
                         <legend>WiFi Configuration</legend>
                         <label for="wifimode">Mode</label>
                         <select name="wifimode" id="wifimode">
-                            <option value="AP">AP</option>
-                            <option value="Station">Station</option>
+                            <option value="AP" title="Create an access point network">AP</option>
+                            <option value="Station" title="Attempt to join an existing client network">Station</option>
+                            <option value="Dual" title="Create an access point and connect to a station network simultaneously">AP & Station</option>
                         </select>
                         <br>
                         <fieldset class="internal">
